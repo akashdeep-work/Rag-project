@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sentence-transformers
+faiss-cpu
+python-docx
+PyPDF2
+beautifulsoup4
+requests
+aiohttp
+watchdog
+openai
+tqdm
+pydantic
