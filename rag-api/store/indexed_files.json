@@ -1,0 +1,14 @@
+{
+  "de42b3d0cf64cd4896f1e00fa5c140eab8e24b36005f27e3ecc8f340cf9840e7": {
+    "source_id": "de42b3d0cf64cd4896f1e00fa5c140eab8e24b36005f27e3ecc8f340cf9840e7",
+    "path": "/Users/karansharma/Projects/Rag/data/24869-pdf.pdf",
+    "modified_at": 1764077165.89335,
+    "file_type": "text"
+  },
+  "9e764456f60e1674a8e2e189322806960345804b899c06bfef8e58cc91da5d40": {
+    "source_id": "9e764456f60e1674a8e2e189322806960345804b899c06bfef8e58cc91da5d40",
+    "path": "/Users/akash/Documents/python/Rag-project/rag-api/data/24869-pdf.pdf",
+    "modified_at": 1764091527.2246015,
+    "file_type": "text"
+  }
+}
