@@ -151,6 +151,7 @@ class FaissHNSWDB:
         Add vectors with user-defined ids and metadata.
         Thread-safe via self.lock.
         """
+        faiss.omp_set_num_threads(1)
         with self.lock:
             uids = list(user_ids)
             n = len(uids)
