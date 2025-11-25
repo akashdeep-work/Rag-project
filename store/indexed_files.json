@@ -10,5 +10,11 @@
     "path": "/Users/akash/Documents/python/Rag-project/rag-api/data/24869-pdf.pdf",
     "modified_at": 1764091527.2246015,
     "file_type": "text"
+  },
+  "842d05513b06e6a3c5f92533dc08a74031f2c96d4a4742a51726e124302fe8ac": {
+    "source_id": "842d05513b06e6a3c5f92533dc08a74031f2c96d4a4742a51726e124302fe8ac",
+    "path": "/Users/akash/Documents/python/Rag-project/data/24869-pdf.pdf",
+    "modified_at": 1764091527.2246015,
+    "file_type": "text"
   }
 }
