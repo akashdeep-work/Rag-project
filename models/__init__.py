@@ -7,6 +7,8 @@ from .schemas import (
     HealthResponse,
 )
 
+from .app_models import(ChatMessage,ChatSession,UploadedFile,User)
+
 __all__ = [
     "ChunkMetadata",
     "SearchResult",
@@ -14,4 +16,5 @@ __all__ = [
     "UploadResponse",
     "ChunkDetail",
     "HealthResponse",
+    "ChatMessage","ChatSession","UploadedFile","User"
 ]

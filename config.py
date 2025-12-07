@@ -26,7 +26,8 @@ RERANK_TOPK = 10
 USE_OPENAI = False            # prefer local summarization unless explicitly enabled
 OPENAI_MODEL = "gpt-4o-mini"  # change as desired when using OpenAI
 USE_LOCAL_MISTRAL = True      # run the summarization model locally
-MISTRAL_MODEL_PATH = "mlx-community/Phi-3.5-mini-instruct-4bit"
+MISTRAL_MODEL_PATH = "microsoft/Phi-3.5-mini-instruct"
+LOCAL_MODEL_DIR = "local_models/phi-3.5-quantized"
 MISTRAL_MAX_NEW_TOKENS = 256
 
 # FastAPI
