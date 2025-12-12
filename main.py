@@ -10,6 +10,9 @@ from routers import search, upload, chunks, health,chat_router,auth_router
 from services.background import BackgroundIndexer
 from AiModel.models import LLM
 from services.summarizer import SearchSummarizer
+from db import engine, Base
+from models import app_models
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -59,9 +62,26 @@ def create_app() -> FastAPI:
     indexer = Indexer()
     llm = LLM()
     summarizer = SearchSummarizer(llm)
-    
+    Base.metadata.create_all(bind=engine)
     # Pass the lifespan context manager here
     app = FastAPI(title="RAG Indexer API", version="1.0.0", lifespan=lifespan)
+
+    origins = [
+    "http://localhost:3000",     # React Dev
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",     # Vite Dev
+    "http://127.0.0.1:5173",
+    # Add your production domain here:
+    # "https://yourdomain.com"
+]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     
     # Store services in app state so they are accessible in lifespan
     app.state.indexer = indexer

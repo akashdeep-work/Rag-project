@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List
 
 from db import get_db
-from middleware.auth import get_current_user
+from middleware.auth import get_current_user, AuthUser
 from models.app_models import User, ChatSession, ChatMessage
 from indexer import Indexer
 from services.summarizer import SearchSummarizer
@@ -32,19 +32,19 @@ class MessageResponse(BaseModel):
 def create_chat_session(
     session_data: SessionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: AuthUser = Depends(get_current_user)
 ):
     """Create a new chat session."""
     new_session = ChatSession(title=session_data.title, user_id=current_user.id)
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
-    return {"id": new_session.id, "title": new_session.title}
+    return {"id": new_session.id, "title": new_session.title, "token":current_user.token}
 
 @router.get("/sessions")
 def get_my_sessions(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: AuthUser = Depends(get_current_user)
 ):
     """List all chat sessions for the logged-in user."""
     sessions = db.query(ChatSession).filter(ChatSession.user_id == current_user.id).all()
@@ -54,12 +54,12 @@ def get_my_sessions(
 def get_chat_history(
     session_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: AuthUser = Depends(get_current_user)
 ):
     """Get message history for a specific session."""
     session = db.query(ChatSession).filter(
         ChatSession.id == session_id, 
-        ChatSession.user_id == current_user.id
+        # ChatSession.user_id == current_user.id
     ).first()
     
     if not session:
@@ -75,12 +75,12 @@ def send_message(
     session_id: int,
     message: MessageCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: AuthUser = Depends(get_current_user),
     indexer: Indexer = Depends(get_indexer),
     summarizer: SearchSummarizer = Depends(get_summarizer)
 ):
     """Send a message, get RAG response, and save both to history."""
-    
+    print(f'user data id is :{current_user.id}')
     # 1. Validate Session
     session = db.query(ChatSession).filter(
         ChatSession.id == session_id, 
