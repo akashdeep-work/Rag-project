@@ -26,9 +26,12 @@ RERANK_TOPK = 10
 USE_OPENAI = False            # prefer local summarization unless explicitly enabled
 OPENAI_MODEL = "gpt-4o-mini"  # change as desired when using OpenAI
 USE_LOCAL_MISTRAL = True      # run the summarization model locally
-MISTRAL_MODEL_PATH = "microsoft/Phi-3.5-mini-instruct"
-LOCAL_MODEL_DIR = "local_models/phi-3.5-quantized"
-MISTRAL_MAX_NEW_TOKENS = 256
+
+# Pre-quantized checkpoints to avoid on-device quantization
+# MLX is used on Apple Silicon, PyTorch for CUDA/CPU
+MODEL_PATH = "Qwen/Qwen2.5-3B-Instruct"
+LOCAL_MODEL_DIR = "local_models/llm-quantized"
+MAX_NEW_TOKENS = 2048
 
 # FastAPI
 HOST = "0.0.0.0"

@@ -32,7 +32,7 @@ class SearchSummarizer:
                 break
 
         context_block = "\n".join(context_sections)
-        if not context_block:
+        if not context_block or context_sections.count == 0:
             return dedent(
                 f"""
                 The user asked: {query}
@@ -56,5 +56,6 @@ class SearchSummarizer:
 
     def summarize(self, query: str, results: List[SearchResult]) -> str:
         prompt = self._build_prompt(query, results)
+        print(f'prompt is {prompt}')
         response = self.llm.generate(prompt)
         return response.get("text", "") if isinstance(response, dict) else str(response)

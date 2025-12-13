@@ -14,8 +14,8 @@ from config import (
     USE_OPENAI,
     OPENAI_MODEL,
     USE_LOCAL_MISTRAL, 
-    MISTRAL_MODEL_PATH, 
-    MISTRAL_MAX_NEW_TOKENS,
+    MODEL_PATH,
+    MAX_NEW_TOKENS,
     LOCAL_MODEL_DIR
 )
 
@@ -68,7 +68,7 @@ class ReRanker:
         return scores
 
 class LocalLLM:
-    def __init__(self, model_name: str = MISTRAL_MODEL_PATH, max_new_tokens: int = 512):
+    def __init__(self, model_name: str = MODEL_PATH, max_new_tokens: int = MAX_NEW_TOKENS):
         self.model_name = model_name
         self.max_new_tokens = max_new_tokens
         self.local_path = LOCAL_MODEL_DIR
@@ -228,8 +228,8 @@ class LLM:
 
         if USE_LOCAL_MISTRAL:
             self.local_llm = LocalLLM(
-                model_name=MISTRAL_MODEL_PATH, 
-                max_new_tokens=MISTRAL_MAX_NEW_TOKENS,
+                model_name=MODEL_PATH, 
+                max_new_tokens=MAX_NEW_TOKENS,
             )
 
     def generate(self, prompt: str, model: Optional[str] = None):

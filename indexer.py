@@ -34,7 +34,7 @@ from reader import (
 from AiModel.models import Embedder
 from utils import make_hash, chunk_id
 from FaissDB.FaissHNSWDB import FaissHNSWDB
-from services.rerank import LinearReranker, SearchCandidate
+from services.rerank import LinearReranker, SearchCandidate, CrossEncoderReranker
 
 # Prevent TQDM warnings in threads
 tqdm.monitor_interval = 0
@@ -103,7 +103,8 @@ class Indexer:
             metric="cosine",
         )
 
-        self.reranker = LinearReranker()
+        # self.reranker = LinearReranker()
+        self.reranker = CrossEncoderReranker()
         self._registry = self._load_registry()
 
     # ------------------------------------------------------------------
