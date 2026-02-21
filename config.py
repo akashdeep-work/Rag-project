@@ -2,7 +2,7 @@ from pathlib import Path
 
 # data + storage
 DATA_DIR = Path("data")
-STORE_DIR = Path("store")
+STORE_DIR = Path("rag_store")
 STORE_DIR.mkdir(parents=True, exist_ok=True)
 
 # FAISS / indexing
@@ -23,8 +23,16 @@ ANN_CANDIDATES = 200
 RERANK_TOPK = 10
 
 # LLM
-USE_OPENAI = True            # if False, will return concatenated context + prompt instead of calling API
-OPENAI_MODEL = "gpt-4o-mini" # change as desired
+USE_OPENAI = False            # prefer local summarization unless explicitly enabled
+OPENAI_MODEL = "gpt-4o-mini"  # change as desired when using OpenAI
+USE_LOCAL_MISTRAL = True      # run the summarization model locally
+
+# Pre-quantized checkpoints to avoid on-device quantization
+# MLX is used on Apple Silicon, PyTorch for CUDA/CPU
+MODEL_PATH = "Qwen/Qwen2.5-3B-Instruct"
+LOCAL_MODEL_DIR = "local_models/llm-quantized"
+OFFLOAD_DIR = "offload_dir"
+MAX_NEW_TOKENS = 2048
 
 # FastAPI
 HOST = "0.0.0.0"

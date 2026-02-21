@@ -151,6 +151,7 @@ class FaissHNSWDB:
         Add vectors with user-defined ids and metadata.
         Thread-safe via self.lock.
         """
+        faiss.omp_set_num_threads(1)
         with self.lock:
             uids = list(user_ids)
             n = len(uids)
@@ -320,6 +321,17 @@ class FaissHNSWDB:
             vec = None
             
         return {"user_id": str(user_id), "int_id": iid, "vector": vec, "metadata": meta}
+
+    def iter_metadata(self):
+        """Yield all stored metadata with their user IDs."""
+        cur = self.conn.cursor()
+        rows = cur.execute("SELECT user_id, metadata FROM id_map").fetchall()
+        for uid, pm in rows:
+            try:
+                meta = pickle.loads(pm) if pm is not None else {}
+            except Exception:
+                meta = {}
+            yield uid, meta
 
     def delete(self, user_id: Any):
         """

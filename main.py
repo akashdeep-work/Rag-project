@@ -1,52 +1,93 @@
-import argparse
+from __future__ import annotations
+
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from AiModel.models import LLM
+from config import DATA_DIR, HOST, PORT
+from db import Base, engine
 from indexer import Indexer
+from models import app_models  # noqa: F401 - ensures models are registered
+from routers import chat_router, chunks, health, search, upload
+from routers.utils import run_blocking
+from services.summarizer import SearchSummarizer
+
+logger = logging.getLogger(__name__)
+
+ALLOWED_ORIGINS: tuple[str, ...] = (
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://karansharma.dev",
+    "http://karansharma.dev",
+    "https://akashdeep.cosmicowl.in",
+    "http://akashdeep.cosmicowl.in",
+)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="RAG Indexer and Search CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Commands")
+def _configure_logging() -> None:
+    root_logger = logging.getLogger()
+    if root_logger.handlers:
+        return
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
-    # ------------------------------
-    # index command
-    # ------------------------------
-    idx = subparsers.add_parser("index", help="Index all documents")
-    idx.add_argument("--chunk_size", type=int, default=500, help="Chunk size")
-    idx.add_argument("--chunk_overlap", type=int, default=50, help="Chunk overlap")
 
-    # ------------------------------
-    # search command
-    # ------------------------------
-    sch = subparsers.add_parser("search", help="Search indexed DB")
-    sch.add_argument("query", type=str, help="Query text")
-    sch.add_argument("--k", type=int, default=20, help="Number of results")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("🚀 Server starting up")
+    indexer_ref: Indexer | None = getattr(app.state, "indexer", None)
+    if indexer_ref is None:
+        raise RuntimeError("Indexer service missing from application state.")
 
-    args = parser.parse_args()
+    await _run_initial_index(indexer_ref)
+    yield
+    logger.info("🛑 Server shutting down")
 
-    # Initialize indexer
-    indexer = Indexer()
 
-    # Handle commands
-    if args.command == "index":
-        print("🔍 Starting indexing...")
-        indexer.index_all(chunk_size=args.chunk_size, chunk_overlap=args.chunk_overlap)
-        print("✅ Indexing completed.")
+def create_app() -> FastAPI:
+    _configure_logging()
+    Base.metadata.create_all(bind=engine)
 
-    elif args.command == "search":
-        print(f"🔎 Searching for: {args.query}")
-        results = indexer.search(args.query, k=args.k)
-        for uid, score, meta in results:
-            print("\n-----------------------------")
-            print("ID:", uid)
-            print("Score:", score)
-            print("Source:", meta.get("source"))
-            print("Chunk Index:", meta.get("chunk_index"))
-            print("Text:", meta.get("text"))
+    app = FastAPI(title="RAG Indexer API", version="1.0.0", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(ALLOWED_ORIGINS),
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-    else:
-        parser.print_help()
+    app.state.indexer = Indexer()
+    app.state.summarizer = SearchSummarizer(LLM())
+
+    app.include_router(health.router)
+    app.include_router(upload.router)
+    app.include_router(chat_router.router)
+    app.include_router(search.router)
+    app.include_router(chunks.router)
+    return app
+
+
+async def _run_initial_index(indexer_ref: Indexer) -> None:
+    data_path = Path(DATA_DIR)
+    has_data = data_path.exists() and any(data_path.iterdir())
+    if indexer_ref._registry or not has_data:
+        return
+
+    logger.info("No index found. Running initial indexing in background worker...")
+    await run_blocking(indexer_ref.index_all)
+    logger.info("Initial indexing complete.")
+
+
+app = create_app()
 
 
 if __name__ == "__main__":
-    # import multiprocessing
-    # multiprocessing.set_start_method("fork", force=True)
-    main()
+    import uvicorn
+
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=False, timeout_keep_alive=300)

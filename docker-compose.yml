@@ -1,0 +1,14 @@
+services:
+  rag-backend:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: always
+    # Essential for PyTorch memory management
+    shm_size: '2gb'
+    volumes:
+      - ./qwen2.5-3b-int4-cpu:/app/model_weights # Mount your local quantized folder
+    deploy:
+      resources:
+        limits:
+          memory: 7G # Leave 1G for the Host OS
